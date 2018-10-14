@@ -87,9 +87,14 @@ public class Reserve extends HttpServlet {
             if(bookingScreen==null){
                 throw new ServletException(MyStrings.NAME_NOT_FOUND);
             }
-            if(bookTickets(inputObject.getJSONObject(MyStrings.SEATS), bookingScreen.getJSONObject(MyStrings.SEAT_INFO))){
-                bookStatus.put(MyStrings.STATUS, true);
+            if(checkTickets(inputObject.getJSONObject(MyStrings.SEATS), bookingScreen.getJSONObject(MyStrings.SEAT_INFO))){
+                if(booked(inputObject.getJSONObject(MyStrings.SEATS), bookingScreen.getJSONObject(MyStrings.SEAT_INFO))){
+                    bookStatus.put(MyStrings.STATUS, true);
                 bookStatus.put(MyStrings.MESSAGE, MyStrings.BOOKED_SUCCESSFULLY);
+                } else {
+                    bookStatus.put(MyStrings.STATUS, false);
+                    bookStatus.put(MyStrings.MESSAGE, MyStrings.BOOKING_UNSUCCESSFUL);
+                }
             } else {
                 bookStatus.put(MyStrings.STATUS, false);
                 bookStatus.put(MyStrings.MESSAGE, MyStrings.BOOKING_UNSUCCESSFUL);
@@ -130,13 +135,15 @@ public class Reserve extends HttpServlet {
         return null;
     }
     
-    private boolean bookTickets(JSONObject inputObject, JSONObject bookingScreenSeatInfo) throws JSONException{
+    private boolean checkTickets(JSONObject inputObject, JSONObject bookingScreenSeatInfo) throws JSONException{
         Iterator seatsRequired = inputObject.keys();
         Iterator seatsAvailable = bookingScreenSeatInfo.keys();
+        String seat;
         int i, j;
         while(seatsRequired.hasNext()){
-            JSONArray requiredSeatNumbers = inputObject.getJSONArray((String)seatsRequired.next());
-            JSONObject availableSeats = bookingScreenSeatInfo.getJSONObject((String)seatsAvailable.next());
+            seat = (String)seatsRequired.next();
+            JSONArray requiredSeatNumbers = inputObject.getJSONArray(seat);
+            JSONObject availableSeats = bookingScreenSeatInfo.getJSONObject(seat);
             JSONArray availableSeatNumbers = availableSeats.getJSONArray(MyStrings.UNRESERVED_SEATS);
             List <Integer> requiredList = new ArrayList<Integer>();
             List <Integer> availableList = new ArrayList<Integer>();
@@ -157,16 +164,49 @@ public class Reserve extends HttpServlet {
                 if(requiredList.get(i)==availableList.get(j)){
                     ++i; ++j;
                 } else if(requiredList.get(i)<availableList.get(j)){
-                    System.out.print("here1");
                     return false;
                 } else {
                     ++j;
                 }
             }
             if(i!=requiredSeatNumbers.length()){
-                System.out.print("here2");
                 return false;
             }
+            
+        }
+        return true;
+    }
+
+    private boolean booked(JSONObject inputObject, JSONObject bookingScreenObject) throws JSONException {
+        Iterator seatsRequired = inputObject.keys();
+        int i, j;
+        String seat;
+        while(seatsRequired.hasNext()){
+            seat = (String)seatsRequired.next();
+            JSONArray requiredSeatNumbers = inputObject.getJSONArray(seat);
+            JSONObject availableSeats = bookingScreenObject.getJSONObject(seat);
+            JSONArray availableSeatNumbers = availableSeats.getJSONArray(MyStrings.UNRESERVED_SEATS);
+            List <Integer> requiredList = new ArrayList<Integer>();
+            List <Integer> availableList = new ArrayList<Integer>();
+            i = 0;
+            while(i < requiredSeatNumbers.length()){
+                requiredList.add(Integer.parseInt(requiredSeatNumbers.get(i).toString()));
+                ++i;
+            }
+            i = 0;
+            while(i < availableSeatNumbers.length()){
+                availableList.add(Integer.parseInt(availableSeatNumbers.get(i).toString()));
+                ++i;
+            }
+            Collections.sort(requiredList);
+            i = 0;
+            while(i > requiredList.size()){
+                if(availableList.contains(requiredList.get(0))){
+                    availableList.remove(requiredList.get(0));
+                }
+                ++i;
+            }
+            availableSeats.put(seat, availableList);
         }
         return true;
     }
