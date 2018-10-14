@@ -22,4 +22,9 @@ public class MyStrings {
     public static String RESERVED_SEATS = "reservedSeats";
     public static String SEAT_INFO = "seatInfo";
     public static String NUMBER_OF_SEATS = "numberOfSeats";
+    public static String NAME_NOT_FOUND = "Booking Screen Name Not in the Database";
+    public static String SEATS = "seats";
+    public static String BOOKED_SUCCESSFULLY = "Tickets Booked Successfully";
+    public static String BOOKING_UNSUCCESSFUL = "Failed!";
+    public static String TICKETS_NOT_AVAILABLE = "Tickets Not Available";
 }

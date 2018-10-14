@@ -4,9 +4,17 @@
         <servlet-name>Screens</servlet-name>
         <servlet-class>Screens</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>Reserve</servlet-name>
+        <servlet-class>Reserve</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>Screens</servlet-name>
-        <url-pattern>/Screens</url-pattern>
+        <url-pattern>/screens</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Reserve</servlet-name>
+        <url-pattern>/reserve/*</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

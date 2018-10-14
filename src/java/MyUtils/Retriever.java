@@ -20,19 +20,18 @@ public class Retriever {
      * this method converts the initial incoming payload to JSONObject 
      * to make it easy to store in the file
      */
-    public static JSONObject retrieveJsonObjFromRequest(BufferedReader reader) throws JSONException{
+    public static JSONObject retrieveJsonObjFromAddMovieScreenRequest(BufferedReader reader) throws JSONException{
         JSONObject obj = new JSONObject(true);
         String body = reader.lines().collect(Collectors.joining());
         obj = new JSONObject(body);
-        return something(obj);
+        return processAddMovieScreenData(obj);
     }
     
     /**
      * this method adds a new parameter, @totalSeats of the theater
      */
     
-    public static JSONObject something(JSONObject obj) throws JSONException{
-        int sumOfSeats = 0;
+    public static JSONObject processAddMovieScreenData(JSONObject obj) throws JSONException{
         JSONObject seatInfo = (JSONObject) obj.get(MyStrings.SEAT_INFO);
         Iterator iter = seatInfo.keys();
         while(iter.hasNext()){
@@ -48,4 +47,12 @@ public class Retriever {
         }
         return obj;
     }
+    
+    public static JSONObject retrieveJsonObjFromReserveRequest(BufferedReader reader) throws JSONException{
+        JSONObject obj = new JSONObject(true);
+        String body = reader.lines().collect(Collectors.joining());
+        obj = new JSONObject(body);
+        return obj;
+    }
+    
 }

@@ -7,6 +7,7 @@
 import MyUtils.CustomErrors;
 import MyUtils.Retriever;
 import MyUtils.MyStrings;
+import MyUtils.ReadFiles;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -30,7 +31,7 @@ import org.json.JSONObject;
  *
  * @author dravit
  */
-@WebServlet(name = "Screens", urlPatterns = {"/Screens"})
+@WebServlet(name = "Screens", urlPatterns = {"/screens"})
 public class Screens extends HttpServlet {
 
     
@@ -76,12 +77,11 @@ public class Screens extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("application/json");
-        BufferedReader reader = request.getReader();
         PrintWriter out = response.getWriter();
         JSONObject outputResponse = new JSONObject();
         JSONObject inputObject;
         try {
-            inputObject = Retriever.retrieveJsonObjFromRequest(reader);
+            inputObject = Retriever.retrieveJsonObjFromAddMovieScreenRequest(request.getReader());
             if(writeToFile(inputObject)){
                 outputResponse.put(MyStrings.STATUS, true);
                 outputResponse.put(MyStrings.MESSAGE, MyStrings.DATA_STORED_SUCCESSFULY);
@@ -91,6 +91,7 @@ public class Screens extends HttpServlet {
             }
             out.print(outputResponse);
         } catch (JSONException ex) {
+            Logger.getLogger(Reserve.class.getName()).log(Level.SEVERE, null, ex);
             throw new ServletException(MyStrings.INVALID_PAYLOAD);
         }
     }
@@ -107,25 +108,19 @@ public class Screens extends HttpServlet {
 
     private boolean writeToFile(JSONObject inputObject) {
         String absolutePath = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
-        absolutePath = absolutePath.substring(0, absolutePath.lastIndexOf("/"));
-        File dataFile = new File(absolutePath + "/data.txt");
-        String str = "";
-        JSONArray array = new JSONArray();
+        absolutePath = absolutePath.substring(0, absolutePath.lastIndexOf("/")) + "/data.txt";
+        
         try {
-            FileReader fileReader = new FileReader(absolutePath + "/data.txt");
-            int i;    
-            while((i=fileReader.read())!=-1)    
-                str += (char)i;
-            array = new JSONArray(str);
-            array.put(inputObject);
+            JSONArray allScreens = ReadFiles.readDataFile(absolutePath);
+            allScreens.put(inputObject);
             FileWriter filewriter;
-            filewriter = new FileWriter (dataFile, false);
+            filewriter = new FileWriter (new File(absolutePath), false);
             filewriter.write("[");
-            for(i = 0; i < array.length()-1; ++i){
-                filewriter.write(array.get(i).toString());
+            for(int i = 0; i < allScreens.length()-1; ++i){
+                filewriter.write(allScreens.get(i).toString());
                 filewriter.write(",");
             }
-            filewriter.write(array.get(i).toString());
+            filewriter.write(allScreens.get(allScreens.length()-1).toString());
             filewriter.write("]");
             filewriter.flush();
             filewriter.close();
